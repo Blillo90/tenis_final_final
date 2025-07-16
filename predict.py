@@ -38,7 +38,9 @@ mean_features = {feat: df_matches[feat].mean() if feat in df_matches.columns els
 # Cargar lista de jugadores únicos para autocompletado
 # -------------------------
 with open(PLAYERS_FILE, 'r', encoding='utf-8') as f:
-    jugadores_unicos = [l.strip() for l in f if l.strip()]
+    jugadores_unicos = [line.strip() for line in f if line.strip()]
+# Set de nombres en minúscula para validación
+jugadores_set = set([j.lower() for j in jugadores_unicos])
 player_completer = WordCompleter(
     jugadores_unicos,
     ignore_case=True,
@@ -113,18 +115,27 @@ def build_features(j1, j2, surf, draw_size):
 # -------------------------
 def predecir_partido():
     print("🎾 Predicción de Partido Futuro (Unificado) 🎾")
-    j1 = prompt("Jugador 1: ", completer=player_completer).strip()
-    j2 = prompt("Jugador 2: ", completer=player_completer).strip()
-    # —————— Fijar orden consistente: orden alfabético ——————
+    # Leer y validar Jugador 1
+    while True:
+        j1 = prompt("Jugador 1: ", completer=player_completer).strip()
+        if j1.lower() in jugadores_set:
+            break
+        print(f"❌ Jugador '{j1}' no encontrado. Intenta de nuevo.")
+    # Leer y validar Jugador 2
+    while True:
+        j2 = prompt("Jugador 2: ", completer=player_completer).strip()
+        if j2.lower() in jugadores_set:
+            break
+        print(f"❌ Jugador '{j2}' no encontrado. Intenta de nuevo.")
+    # Fijar orden consistente: orden alfabético
     if j1.lower() > j2.lower():
         j1, j2 = j2, j1
-    # ————————————————————————————————————————————————
     surf = prompt("Superficie (hard/clay/grass): ", completer=surface_completer).strip().lower()
     ds = int(prompt("Tamaño de cuadro (número): ").strip())
     X = build_features(j1, j2, surf, ds)
     prob1 = model.predict_proba(X)[0,1]
     prob2 = 1 - prob1
-    print(f"\n--- Resultado ---")
+    print("\n--- Resultado ---")
     print(f"{j1} tiene {prob1*100:.2f}% de probabilidad de ganar")
     print(f"{j2} tiene {prob2*100:.2f}% de probabilidad de ganar")
     # SHAP
