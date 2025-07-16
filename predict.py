@@ -115,6 +115,10 @@ def predecir_partido():
     print("🎾 Predicción de Partido Futuro (Unificado) 🎾")
     j1 = prompt("Jugador 1: ", completer=player_completer).strip()
     j2 = prompt("Jugador 2: ", completer=player_completer).strip()
+    # —————— Fijar orden consistente: orden alfabético ——————
+    if j1.lower() > j2.lower():
+        j1, j2 = j2, j1
+    # ————————————————————————————————————————————————
     surf = prompt("Superficie (hard/clay/grass): ", completer=surface_completer).strip().lower()
     ds = int(prompt("Tamaño de cuadro (número): ").strip())
     X = build_features(j1, j2, surf, ds)
